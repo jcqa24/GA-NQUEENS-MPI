@@ -1,11 +1,11 @@
 void InitConf(Chromo *population, int N, int inicio, int fin)
 {
-
     int pos;
     int i, j, k;
 
     for (k = inicio; k < fin; k++)
     {
+
         population[k].config = (int *)malloc(sizeof(int) * N);
         for (j = 0; j < N; j++)
         {

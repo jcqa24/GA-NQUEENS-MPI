@@ -17,6 +17,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Status s;
 
     inicio = (rank * (p / size));
     fin = inicio + (p / size);
@@ -32,10 +33,22 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
     //#pragma omp critical
 
-    if (population[posminlocal].fitness < Bestfitness)
+    if (rank == 0)
     {
-        copyBest(Best, population[posminlocal], N);
-        Bestfitness = population[posminlocal].fitness;
+
+        if (population[posminlocal].fitness < Bestfitness)
+        {
+            copyBest(Best, population[posminlocal], N);
+            Bestfitness = population[posminlocal].fitness;
+        }
+        for (i = 0; i < rank - 1; i++)
+        {
+            MPI_Recv(&posminlocal,1,MPI_Init)
+        }
+    }
+    else
+    {
+        MPI_Send(&posminlocal, 1, MPI_Init, 0, 0, MPI_COMM_WORD);
     }
 
     while ((Bestfitness > 0) && (countGen < numMaxGen))
@@ -79,4 +92,5 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
     }
 
     return countGen;
+    MPI_Finalize();
 }
