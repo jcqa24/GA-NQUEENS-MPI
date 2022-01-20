@@ -9,7 +9,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
     Chromo *population = (Chromo *)malloc(sizeof(Chromo) * p);
     reservaMemoria(population, parents, p, np, N);
 
-    int inicio, fin;
+    int inicio, fin,i;
 
     int Bestfitness = 100000;
 
@@ -31,7 +31,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
     posminlocal = BuscaMin(population, inicio, fin);
 
-    //#pragma omp critical
+
 
     if (rank == 0)
     {
@@ -43,12 +43,17 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
         }
         for (i = 0; i < rank - 1; i++)
         {
-            MPI_Recv(&posminlocal,1,MPI_Init)
+            MPI_Recv(&posminlocal, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &s);
+            if (population[posminlocal].fitness < Bestfitness)
+            {
+                copyBest(Best, population[posminlocal], N);
+                Bestfitness = population[posminlocal].fitness;
+            }
         }
     }
     else
     {
-        MPI_Send(&posminlocal, 1, MPI_Init, 0, 0, MPI_COMM_WORD);
+        MPI_Send(&posminlocal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
     }
 
     while ((Bestfitness > 0) && (countGen < numMaxGen))
@@ -74,7 +79,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
         // Insertion_sort(population, p);
         posminlocal = BuscaMin(population, inicio, fin);
 
-        //#pragma omp critical
+        //critical
 
         if (population[posminlocal].fitness < Bestfitness)
         {
