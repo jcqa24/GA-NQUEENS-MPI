@@ -3,6 +3,7 @@
 int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGen, clock_t start)
 {
 
+    MPI_Init(NULL, NULL);
     int posminlocal;
     int countGen = 0; // Contador de Generaciones
     Chromo *parents = (Chromo *)malloc(sizeof(Chromo) * np);
@@ -13,7 +14,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
     int Bestfitness = 100000;
 
-    MPI_Init(NULL, NULL);
+   
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -31,6 +32,7 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
     posminlocal = BuscaMin(population, inicio, fin);
 
+    //gatter
 
 
     if (rank == 0)
@@ -55,6 +57,8 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
     {
         MPI_Send(&posminlocal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
     }
+    
+    //broadcast Mejor global
 
     while ((Bestfitness > 0) && (countGen < numMaxGen))
     {
@@ -87,15 +91,18 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
             Bestfitness = population[posminlocal].fitness;
         }
 
+    //enviar contador y mehor global
+
         if (rank == 0)
         {
 
             countGen++;
         }
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        
     }
 
-    return countGen;
     MPI_Finalize();
+    return countGen;
+    
 }
