@@ -13,30 +13,47 @@
 #include "messages.h"
 #include "ag.h"
 
+#include "mpi.h"
 
 int main()
 {
     srand(time(NULL));
 
-    int N = 8;             // reinas
+    int N = 8;              // reinas
     int p = 100;            // poplacion incial
-    int np = p / 2;        // numero de padres
-    int prob = 10;         // probabilidad de mutacion
+    int np;         // numero de padres
+    int prob = 10;          // probabilidad de mutacion
     int numMaxGen = 100000; // Numero Maximo de Generaciones
-    int countGen = 0; //contador de Generaciones
+    int countGen = 0;       //contador de Generaciones
     Chromo Best;
     Best.fitness = 0;
     Best.config = (int *)malloc(sizeof(int) * N);
 
-    printf("Agoritmo genetico para N reinias \n");
-    printf("Numero de Reinas -> %d\n", N);
-    printf("Poblacion inicial -> %d\n", p);
+    MPI_Init(NULL, NULL);
 
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+
+    p = p /size;
+    np = p /2;
+
+    if (rank == 0)
+    {
+        printf("Cada hilo trabajara.. %d\n",p);
+        printf("Agoritmo genetico para N reinias \n");
+        printf("Numero de Reinas -> %d\n", N);
+        printf("Poblacion inicial -> %d\n", p);
+    }
+    
     clock_t start = clock();
 
-    countGen = algoritmoGenetico(N, p, np, &Best, prob, numMaxGen, start);
+    countGen = algoritmoGenetico(N, p, np, &Best, prob, numMaxGen, start, rank, size);
 
-    confFinal(Best, N, start,countGen);
+    if (rank == 0)
+        confFinal(Best, N, start, countGen);
 
+   
     return 0;
 }

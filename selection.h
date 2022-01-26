@@ -15,8 +15,6 @@ void Insertion_sort(Chromo *population, int p)
     }
 }
 
-
-
 void shuffle(Chromo *population, int p, int N)
 {
     int i, j;
@@ -55,33 +53,38 @@ int BuscaMin(Chromo *population, int inicio, int fin)
     return pos;
 }
 
-
-
 void selectChampionship(Chromo *parents, Chromo *population, int N, int p)
 {
-
     int j, i, c = 0;
 
-    // shuffle(population, p, N); // check
-
-    for (i = 0; i < p; i = i + 2)
+    
+    for (i = 0; i < p; i +=2)
     {
-        if (population[i].fitness <= population[i + 1].fitness)
+        
+        if ((i + 1) < p)
         {
-            // parents[c] = population[i];
-            for (j = 0; j < N; j++)
+            
+            if (population[i].fitness <= population[i + 1].fitness)
             {
-                parents[c].config[j] = population[i].config[j];
+                // parents[c] = population[i];
+                for (j = 0; j < N; j++)
+                {
+                    parents[c].config[j] = population[i].config[j];
+                }
+
+               
             }
-        }
-        else
-        {
-            // parents[c] = population[i + 1];
-            for (j = 0; j < N; j++)
+
+            else
             {
-                parents[c].config[j] = population[i + 1].config[j];
+                // parents[c] = population[i + 1];
+                for (j = 0; j < N; j++)
+                {
+                    parents[c].config[j] = population[i + 1].config[j];
+                }
             }
+            c++;
         }
-        c++;
+        
     }
 }
