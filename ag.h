@@ -3,15 +3,20 @@
 int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGen, clock_t start, int rank, int size)
 {
 
+
+
     int posminlocal;
     int countGen = 0; // Contador de Generaciones
     Chromo *parents = (Chromo *)malloc(sizeof(Chromo) * np);
     Chromo *population = (Chromo *)malloc(sizeof(Chromo) * p);
+    Chromo *CandidateBest = (Chromo *)malloc(sizeof(Chromo) * size);
     reservaMemoria(population, parents, p, np, N);
 
     int inicio, fin, i;
 
     int Bestfitness = 100000;
+
+    //printf("Cada hilo trabajara: %d \n",p);
 
     MPI_Status s;
 
@@ -28,15 +33,21 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
     posminlocal = BuscaMin(population, inicio, fin);
 
-    //gatter
-    // MPI_Gather(&posminlocal, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    MPI_Gather(&population[posminlocal], sizeof(Best), MPI_BYTE, CandidateBest, sizeof(Best), MPI_BYTE, 0, MPI_COMM_WORLD);
 
-    //broadcast Mejor global
+    if (rank == 0)
+    {
+        for (i = 0; i < size; i++)
+        {
+            if (Bestfitness > CandidateBest[i].fitness)
+            {
+                copyBest(Best, population[posminlocal], N);
+                Bestfitness = population[posminlocal].fitness;
+            }
+        }
+    }
 
-    //MPI_Bcast(posminlocal, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-    copyBest(Best, population[posminlocal], N);
-    Bestfitness = population[posminlocal].fitness;
+    MPI_Bcast(&Best, sizeof(Best), MPI_BYTE, 0, MPI_COMM_WORLD);
 
     while ((Bestfitness > 0) && (countGen < numMaxGen))
     {
@@ -51,15 +62,10 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
         // Mutacion
 
-        
         mutation(population, prob, N, inicio, fin);
-        
 
-        
-        
         // Calculo del Fit
         calFit(population, N, inicio, fin);
-       
 
         // Ordenamos
         // Insertion_sort(population, p);
@@ -67,24 +73,30 @@ int algoritmoGenetico(int N, int p, int np, Chromo *Best, int prob, int numMaxGe
 
         //critical
 
-    //MPI_Bcast(posminlocal, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if (population[posminlocal].fitness < Bestfitness)
+        MPI_Gather(&population[posminlocal], sizeof(Best), MPI_BYTE, CandidateBest, sizeof(Best), MPI_BYTE, 0, MPI_COMM_WORLD);
+
+        if (rank == 0)
         {
-            copyBest(Best, population[posminlocal], N);
-            Bestfitness = population[posminlocal].fitness;
+            for (i = 0; i < size; i++)
+            {
+                if (Bestfitness > CandidateBest[i].fitness)
+                {
+                    copyBest(Best, population[posminlocal], N);
+                    Bestfitness = population[posminlocal].fitness;
+                }
+            }
         }
 
-        //enviar contador y mehor global
+        MPI_Bcast(&Best, sizeof(Best), MPI_BYTE, 0, MPI_COMM_WORLD);
 
         if (rank == 0)
         {
 
             countGen++;
-            //MPI_Bcast(countGen, 1, MPI_INT, 0, MPI_COMM_WORLD);
         }
+
+        MPI_Bcast(&countGen, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
-    
     return countGen;
-    MPI_Finalize();
 }
