@@ -23,9 +23,9 @@ int main()
     int p = 100;        // poplacion incial
     int np;             // numero de padres
     int prob = 10;      // probabilidad de mutacion
-    int numMaxGen = 10; // Numero Maximo de Generaciones
+    int numMaxGen = 1000; // Numero Maximo de Generaciones
     int countGen = 0;   // contador de Generaciones
-    Chromo Best;
+   
 
     MPI_Init(NULL, NULL);
 
