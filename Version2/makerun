@@ -1,7 +1,0 @@
-clear
-mpicc -o main.out main.c 
-if [ $? -eq 0 ]
-then
-    clear
-    mpirun main.out
-fi
