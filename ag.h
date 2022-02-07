@@ -58,7 +58,7 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
     if (rank == 0)
     {
         idbestglobal = 0;
-        Bestfitness = N * N * N;
+        Bestfitness = population[posminlocal].fitness;
         for (i = 1; i < size; i++)
         {
             if (Bestfitness > CandidateBest[i])
@@ -112,7 +112,7 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
         if (rank == 0)
         {
             idbestglobal = 0;
-            Bestfitness = N * N * N;
+            Bestfitness = population[posminlocal].fitness;
             for (i = 1; i < size; i++)
             {
                 if (Bestfitness > CandidateBest[i])
