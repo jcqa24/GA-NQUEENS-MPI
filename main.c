@@ -20,7 +20,7 @@ int main()
     srand(time(NULL));
 
     int N = 8;          // reinas
-    int p = 1000;        // poplacion incial
+    int p = 100;        // poplacion incial
     int np;             // numero de padres
     int prob = 10;      // probabilidad de mutacion
     int numMaxGen = 10000; // Numero Maximo de Generaciones

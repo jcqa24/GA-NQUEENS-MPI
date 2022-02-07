@@ -10,7 +10,7 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
     Chromo Best;
 
     Best.config = (int *)calloc(N, sizeof(int));
-
+    Best.fitness = N * N * N;
     int lengths[2] = {1, N};
 
     MPI_Aint displacements[2];
@@ -58,7 +58,7 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
     if (rank == 0)
     {
         idbestglobal = 0;
-
+        Bestfitness = N * N * N;
         for (i = 1; i < size; i++)
         {
             if (Bestfitness > CandidateBest[i])
@@ -71,15 +71,16 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
 
     MPI_Bcast(&idbestglobal, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    MPI_Bcast(&Bestfitness, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
     if (rank == idbestglobal)
     {
-        for (int i = 0; i < N; i++)
+        if (Best.fitness > population[posminlocal].fitness)
         {
-            Best.config[i] = population[posminlocal].config[i];
+            for (int i = 0; i < N; i++)
+            {
+                Best.config[i] = population[posminlocal].config[i];
+            }
+            Best.fitness = population[posminlocal].fitness;
         }
-        Best.fitness = Bestfitness;
     }
 
     MPI_Bcast(&Best, 1, chromo_type, idbestglobal, MPI_COMM_WORLD);
@@ -106,14 +107,12 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
         // Insertion_sort(population, p);
         posminlocal = BuscaMin(population, inicio, fin);
 
-        // critical
-
         MPI_Gather(&population[posminlocal].fitness, 1, MPI_INT, &CandidateBest[0], 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (rank == 0)
         {
             idbestglobal = 0;
-
+            Bestfitness = N * N * N;
             for (i = 1; i < size; i++)
             {
                 if (Bestfitness > CandidateBest[i])
@@ -128,15 +127,17 @@ int algoritmoGenetico(int N, int p, int np, int prob, int numMaxGen, clock_t sta
 
         if (rank == idbestglobal)
         {
-            for (int i = 0; i < N; i++)
+            if (Best.fitness > population[posminlocal].fitness)
             {
-                Best.config[i] = population[posminlocal].config[i];
+                for (int i = 0; i < N; i++)
+                {
+                    Best.config[i] = population[posminlocal].config[i];
+                }
+                Best.fitness = population[posminlocal].fitness;
             }
         }
 
         MPI_Bcast(&Best, 1, chromo_type, idbestglobal, MPI_COMM_WORLD);
-
-        MPI_Bcast(&Bestfitness, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         if (rank == 0)
         {
